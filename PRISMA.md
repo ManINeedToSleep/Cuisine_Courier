@@ -6,8 +6,8 @@ Like literally, just look at this.
 
 ```prisma
 model User {
-  id        Int    @id @default(autoincrement())
-  email     String @unique
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -16,8 +16,10 @@ model User {
 
 This is the schema for a user table. It's easy to understand and it's easy to use. All y'gotta do is define the schema and prisma will handle the rest. There is no need to create a migration files, like in sequelize. No need for a config file, no need for a database.js file, and your .env file is much cleaner too!
 
+```env
 DATABASE_URL="mysql://db_user:db_password@localhost:3306/app_name"
 JWT_SECRET="your-super-secret-key"
+```
 
 This is literally it. You don't need to create a long ahh .env file with a bunch of dumb variables that might screw up your stuff in the future if you got it wrong once. Like I swear, most of my problems comes from the database.js bs.
 
@@ -25,6 +27,7 @@ No need for colorful, eye-catching, confusing ahh code. Just plain, simple, and 
 
 Like, compare this sequelize code to the prisma code.
 
+```javascript
 export default (sequelize) => {
   const Friends = sequelize.define('Friends', {
     id: {
@@ -100,9 +103,11 @@ export default (sequelize) => {
 
   return Friends;
 };
+```
 
 and this is the prisma code.
 
+```prisma
 model Friends {
   id              String   @id @default(uuid())
   userId          String
@@ -129,5 +134,6 @@ enum Status {
   birthday
   passed
 }
+```
 
 Do you see the difference? Cause I sure do. Like, look at that! It's so much easier to understand and it's so much easier to use.
