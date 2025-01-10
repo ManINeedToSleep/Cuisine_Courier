@@ -45,5 +45,11 @@ export const mealDBService = {
     const response = await fetch(`${MEALDB_BASE_URL}/categories.php`)
     const data = await response.json()
     return data.categories || []
-  }
+  },
+
+  getRecipeById: async (id: string) => {
+    const response = await fetch(`${MEALDB_BASE_URL}/lookup.php?i=${id}`)
+    const data = await response.json()
+    return data.meals?.[0]
+  },
 } 

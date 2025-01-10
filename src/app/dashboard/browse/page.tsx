@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Navbar from '@/components/layout/Navbar'
 import { mealDBService, type MealDBRecipe } from '@/lib/services/mealdb'
+import RecipeModal from '@/components/recipe/RecipeModal'
 
 // MealDB uses these specific category names
 const MEAL_CATEGORIES = [
@@ -22,6 +23,7 @@ export default function BrowsePage() {
   const [searchResults, setSearchResults] = useState<MealDBRecipe[]>([])
   const [randomRecipes, setRandomRecipes] = useState<MealDBRecipe[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedRecipe, setSelectedRecipe] = useState<MealDBRecipe | null>(null)
 
   useEffect(() => {
     fetchRandomRecipes()
@@ -62,6 +64,15 @@ export default function BrowsePage() {
       console.error('Error fetching category recipes:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRecipeDetails = async (id: string) => {
+    try {
+      const recipe = await mealDBService.getRecipeById(id)
+      setSelectedRecipe(recipe)
+    } catch (error) {
+      console.error('Error fetching recipe details:', error)
     }
   }
 
@@ -133,7 +144,9 @@ export default function BrowsePage() {
               (searchResults.length > 0 ? searchResults : randomRecipes).map((recipe) => (
                 <div
                   key={recipe.idMeal}
-                  className="recipe-card rounded-lg overflow-hidden bg-[url('/textures/light-wood.jpg')] bg-cover"
+                  className="recipe-card rounded-lg overflow-hidden bg-[url('/textures/light-wood.jpg')] bg-cover
+                           cursor-pointer hover:transform hover:scale-105 transition-transform duration-200"
+                  onClick={() => fetchRecipeDetails(recipe.idMeal)}
                 >
                   <Image
                     src={recipe.strMealThumb}
@@ -159,6 +172,14 @@ export default function BrowsePage() {
           </div>
         </div>
       </main>
+
+      {/* Modal */}
+      {selectedRecipe && (
+        <RecipeModal
+          recipe={selectedRecipe}
+          onClose={() => setSelectedRecipe(null)}
+        />
+      )}
     </div>
   )
 } 
