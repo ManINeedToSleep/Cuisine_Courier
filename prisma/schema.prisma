@@ -1,0 +1,71 @@
+// 📚 Database Schema
+// Here lies the structure of our digital recipe book
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Points to your MySQL castle 🏰
+}
+
+// Users - The chefs of our kitchen
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique // No duplicate chefs allowed! 👨‍🍳
+  password      String    // Safely encrypted, because sharing passwords is bad
+  name          String
+  createdAt     DateTime  @default(now()) // When they joined our cooking party
+  updatedAt     DateTime  @updatedAt
+  recipes       Recipe[]  // Their culinary creations
+  favorites     Recipe[]  @relation("UserFavorites") // Their bookmarked recipes
+  collections   Collection[] // Their recipe playlists, if you will 📑
+}
+
+// Recipes - The stars of the show! ⭐
+model Recipe {
+  id            Int       @id @default(autoincrement())
+  title         String    // The name of the masterpiece
+  description   String    @db.Text // A lovely description of the dish
+  ingredients   Json      // Shopping list as JSON - modern problems require modern solutions
+  instructions  Json      // How to not burn water
+  cookingTime   Int       // In minutes, because we're not savages
+  servings      Int      // How many friends you can feed
+  imageUrl      String?  // A picture is worth a thousand words
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
+  favoritedBy   User[]    @relation("UserFavorites")
+  collections   Collection[] @relation("RecipeCollections")
+  categories    Category[] // For when you can't decide if it's dinner or breakfast
+
+  @@index([userId]) // Makes searching faster! Zoom zoom! 🏎️
+}
+
+model Collection {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  recipes     Recipe[]  @relation("RecipeCollections")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  recipes     Recipe[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+// Add indexes for better query performance
+@@index([userId], name: "recipes_userId_idx")
+
+
+// The rest of the models follow similar patterns...
+// I won't comment them all because you get the idea
+// And if you don't, well... that's what Stack Overflow is for! 😉
