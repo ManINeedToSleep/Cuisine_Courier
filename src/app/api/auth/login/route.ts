@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Generate token
     const token = generateToken(user.id);
 
-    // Create response
+    // Create response with user data
     const response = NextResponse.json({
       user: {
         id: user.id,
@@ -48,18 +48,19 @@ export async function POST(request: Request) {
       token,
     });
 
-    // Set HTTP-only cookie
-    response.cookies.set('auth-token', token, {
+    // Set cookie on the response object
+    response.cookies.set('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      sameSite: 'lax',
+      path: '/',
     });
 
     return response;
   } catch (error) {
+    console.error('Login API error:', error);
     return NextResponse.json(
-      { error: 'Something went wrong' },
+      { message: 'Login failed' },
       { status: 500 }
     );
   }

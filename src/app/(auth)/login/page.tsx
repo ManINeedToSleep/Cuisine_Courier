@@ -10,65 +10,42 @@
 import { useState } from 'react'
 import { useAuth } from '@/lib/context/AuthContext'
 import Link from 'next/link'
-import { gsap } from 'gsap'
-import { useEffect, useRef } from 'react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { login } = useAuth()
-  
-  const formRef = useRef(null)
-  const titleRef = useRef(null)
-
-  useEffect(() => {
-    // Animate elements on mount
-    gsap.from(titleRef.current, {
-      y: -50,
-      opacity: 0,
-      duration: 1,
-      ease: "power3.out"
-    })
-
-    gsap.from(formRef.current, {
-      y: 50,
-      opacity: 0,
-      duration: 1,
-      delay: 0.3,
-      ease: "power3.out"
-    })
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      console.log('Attempting login...')
       await login({ email, password })
+      console.log('Login successful, should redirect...')
     } catch (err) {
+      console.error('Login error:', err)
       setError('Invalid credentials')
     }
   }
 
   return (
     <div className="min-h-screen bg-[url('/textures/wood-bg.jpg')] bg-cover py-12 px-4 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-black/30" /> {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-black/30" />
       
       <div className="relative z-10 max-w-md mx-auto">
         {/* Title Section */}
-        <div ref={titleRef} className="text-center mb-8">
+        <div className="text-center mb-8 animate-fade-in">
           <h2 className="text-4xl font-bold text-amber-50 font-serif">
             Welcome Back
           </h2>
           <p className="mt-2 text-amber-100">
-            Time to cook up something delicious!
+            Sign in to continue your culinary journey
           </p>
         </div>
 
         {/* Form Section */}
-        <div 
-          ref={formRef}
-          className="bg-[url('/textures/light-wood.jpg')] bg-cover rounded-lg p-8 shadow-2xl"
-        >
+        <div className="bg-[url('/textures/light-wood.jpg')] bg-cover rounded-lg p-8 shadow-2xl animate-slide-up">
           <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (

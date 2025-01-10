@@ -42,9 +42,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
+    console.error('Signup failed:', error)
     return NextResponse.json(
-      { error: 'Something went wrong' },
+      { message: 'Signup failed' },
       { status: 500 }
-    );
+    )
   }
 } 

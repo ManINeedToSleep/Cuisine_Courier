@@ -10,7 +10,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function LandingPage() {
   const headerRef = useRef(null)
@@ -86,7 +85,7 @@ export default function LandingPage() {
 
           {/* Right Side - Features */}
           <div className="space-y-6">
-            {['Discover', 'Create', 'Share'].map((feature, index) => (
+            {['Discover', 'Create', 'Share'].map((feature) => (
               <div 
                 key={feature}
                 className="bg-[url('/textures/dark-wood.jpg')] bg-cover rounded-lg p-6 shadow-xl transform hover:-translate-y-1 transition-transform duration-300"

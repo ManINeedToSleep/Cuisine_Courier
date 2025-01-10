@@ -1,6 +1,5 @@
 'use client'
-import { createContext, useContext, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { createContext, useContext, useState, useEffect } from 'react'
 import type { AuthResponse, UserLogin, UserRegistration } from '../types/auth'
 
 interface AuthContextType {
@@ -16,7 +15,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthResponse['user'] | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
 
   useEffect(() => {
     // Check if user is logged in on mount
@@ -39,19 +37,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (credentials: UserLogin) => {
     try {
+      console.log('Sending login request...')
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
       })
 
+      console.log('Response status:', response.status)
+      const data = await response.json()
+      console.log('Login response:', data)
+
       if (!response.ok) {
-        throw new Error('Login failed')
+        throw new Error(data.message || 'Login failed')
       }
 
-      const data: AuthResponse = await response.json()
       setUser(data.user)
-      router.push('/dashboard')
+      
+      // Add a small delay before navigation
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 100)
+      
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -83,9 +90,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST'
+      })
+
+      if (!response.ok) {
+        throw new Error('Logout failed')
+      }
+
       setUser(null)
-      router.push('/login')
+      window.location.href = '/login'
     } catch (error) {
       console.error('Logout error:', error)
       throw error

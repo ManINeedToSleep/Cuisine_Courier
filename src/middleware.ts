@@ -3,32 +3,27 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyToken } from './lib/utils/auth'
-
-// List of routes that need a VIP pass
-const protectedPaths = ['/dashboard']
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const sessionCookie = request.cookies.get('session')
+  console.log('Middleware - Session cookie:', sessionCookie)
 
-  // If they're trying to access the VIP area...
-  if (protectedPaths.some(path => pathname.startsWith(path))) {
-    const token = request.cookies.get('auth-token')?.value
+  // If accessing protected routes without session, redirect to login
+  if (!sessionCookie && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
 
-    // No token? No entry!
-    if (!token || !verifyToken(token)) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+  // If accessing auth pages with session, redirect to dashboard
+  if (sessionCookie && (
+    request.nextUrl.pathname.startsWith('/login') || 
+    request.nextUrl.pathname.startsWith('/signup')
+  )) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return NextResponse.next()
 }
 
-// Tell Next.js which routes to guard
-// It's like a bouncer's checklist
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    // Add more VIP areas here
-  ]
+  matcher: ['/dashboard/:path*', '/login', '/signup']
 } 

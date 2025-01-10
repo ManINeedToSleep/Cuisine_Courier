@@ -10,8 +10,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/lib/context/AuthContext'
 import Link from 'next/link'
-import { gsap } from 'gsap'
-import { useEffect, useRef } from 'react'
 
 export default function SignupPage() {
   const [name, setName] = useState('')
@@ -20,27 +18,6 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const { signup } = useAuth()
-  
-  const formRef = useRef(null)
-  const titleRef = useRef(null)
-
-  useEffect(() => {
-    // Stagger animation for elements
-    gsap.from(titleRef.current, {
-      y: -50,
-      opacity: 0,
-      duration: 1,
-      ease: "power3.out"
-    })
-
-    gsap.from(formRef.current, {
-      y: 50,
-      opacity: 0,
-      duration: 1,
-      delay: 0.3,
-      ease: "power3.out"
-    })
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,8 +30,9 @@ export default function SignupPage() {
 
     try {
       await signup({ name, email, password })
-    } catch (err) {
+    } catch (error) {
       setError('Failed to create account')
+      console.error('Signup error:', error)
     }
   }
 
@@ -64,20 +42,17 @@ export default function SignupPage() {
       
       <div className="relative z-10 max-w-md mx-auto">
         {/* Title Section */}
-        <div ref={titleRef} className="text-center mb-8">
+        <div className="text-center mb-8 animate-fade-in">
           <h2 className="text-4xl font-bold text-amber-50 font-serif">
-            Join Our Kitchen
+            Create Account
           </h2>
           <p className="mt-2 text-amber-100">
-            Start your culinary adventure today!
+            Join us on your culinary adventure
           </p>
         </div>
 
         {/* Form Section */}
-        <div 
-          ref={formRef}
-          className="bg-[url('/textures/light-wood.jpg')] bg-cover rounded-lg p-8 shadow-2xl"
-        >
+        <div className="bg-[url('/textures/light-wood.jpg')] bg-cover rounded-lg p-8 shadow-2xl animate-slide-up">
           <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
