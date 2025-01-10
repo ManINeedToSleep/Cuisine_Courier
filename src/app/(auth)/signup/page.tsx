@@ -30,9 +30,8 @@ export default function SignupPage() {
 
     try {
       await signup({ name, email, password })
-    } catch (error) {
-      setError('Failed to create account')
-      console.error('Signup error:', error)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to create account')
     }
   }
 
@@ -54,13 +53,12 @@ export default function SignupPage() {
         {/* Form Section */}
         <div className="bg-[url('/textures/light-wood.jpg')] bg-cover rounded-lg p-8 shadow-2xl animate-slide-up">
           <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6">
+            {error && (
+              <div className="mb-4 p-3 rounded bg-red-500/50 backdrop-blur-sm text-white text-sm">
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="bg-red-500/40 backdrop-blur-sm text-red-100 p-3 rounded-lg text-center">
-                  {error}
-                </div>
-              )}
-              
               <div>
                 <label htmlFor="name" className="block text-amber-50 text-sm font-medium mb-2">
                   Full Name

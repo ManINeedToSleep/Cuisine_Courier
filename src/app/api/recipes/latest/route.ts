@@ -1,27 +1,33 @@
 import { NextResponse } from 'next/server'
 
+const MEALDB_BASE_URL = 'https://www.themealdb.com/api/json/v1/1'
+
 export async function GET() {
   try {
-    // For testing, return mock data until DB is setup
-    const mockRecipes = [
-      {
-        id: 1,
-        title: "Spaghetti Carbonara",
-        image: "/images/carbonara.jpg",
-        readyInMinutes: 30,
-        servings: 4
-      },
-      {
-        id: 2,
-        title: "Classic Burger",
-        image: "/images/burger.jpg",
-        readyInMinutes: 25,
-        servings: 2
-      },
-      // Add more mock recipes as needed
-    ]
+    // Fetch random recipes
+    const recipes = await Promise.all(
+      Array(8).fill(null).map(async () => {
+        const response = await fetch(`${MEALDB_BASE_URL}/random.php`)
+        const data = await response.json()
+        return data.meals[0]
+      })
+    )
 
-    return NextResponse.json(mockRecipes)
+    // Remove duplicates using Set and idMeal
+    const uniqueRecipes = Array.from(
+      new Map(recipes.map(recipe => [recipe.idMeal, recipe])).values()
+    ).slice(0, 6)
+
+    // Transform to match our interface
+    const formattedRecipes = uniqueRecipes.map(recipe => ({
+      id: recipe.idMeal,
+      title: recipe.strMeal,
+      image: recipe.strMealThumb,
+      readyInMinutes: 30,
+      servings: 4,
+    }))
+
+    return NextResponse.json(formattedRecipes)
   } catch (error) {
     console.error('Error fetching latest recipes:', error)
     return NextResponse.json(

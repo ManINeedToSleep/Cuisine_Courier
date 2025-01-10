@@ -7,16 +7,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyPassword, generateToken } from '@/lib/utils/auth';
-import type { UserLogin } from '@/lib/types/auth';
 
 export async function POST(request: Request) {
   try {
-    const body: UserLogin = await request.json();
+    const body = await request.json();
     const { email, password } = body;
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true
+      }
     });
 
     if (!user) {
@@ -42,25 +47,24 @@ export async function POST(request: Request) {
     const response = NextResponse.json({
       user: {
         id: user.id,
-        email: user.email,
         name: user.name,
-      },
-      token,
+        email: user.email
+      }
     });
 
-    // Set cookie on the response object
+    // Set cookie
     response.cookies.set('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/',
+      path: '/'
     });
 
     return response;
   } catch (error) {
-    console.error('Login API error:', error);
+    console.error('Login error:', error);
     return NextResponse.json(
-      { message: 'Login failed' },
+      { error: 'Login failed' },
       { status: 500 }
     );
   }

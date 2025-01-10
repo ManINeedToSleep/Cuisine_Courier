@@ -5,47 +5,69 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { hashPassword } from '@/lib/utils/auth';
-import type { UserRegistration } from '@/lib/types/auth';
+import { hashPassword, generateToken } from '@/lib/utils/auth';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export async function POST(request: Request) {
   try {
-    const body: UserRegistration = await request.json();
-    const { email, password, name } = body;
+    const body = await request.json();
+    const { name, email, password } = body;
 
-    // Check if user exists
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists' },
-        { status: 400 }
+        { error: 'An account with this email already exists' },
+        { status: 409 } // 409 Conflict
       );
     }
 
-    // Hash password and create user
     const hashedPassword = await hashPassword(password);
     const user = await prisma.user.create({
       data: {
+        name,
         email,
         password: hashedPassword,
-        name,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
+      }
     });
 
-    return NextResponse.json({ user }, { status: 201 });
+    const token = generateToken(user.id);
+    const response = NextResponse.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+      token,
+    });
+
+    response.cookies.set('session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
-    console.error('Signup failed:', error)
+    console.error('Signup error:', error);
+    
+    // Handle unique constraint violation explicitly
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') { // Unique constraint violation
+        return NextResponse.json(
+          { error: 'An account with this email already exists' },
+          { status: 409 }
+        );
+      }
+    }
+
     return NextResponse.json(
-      { message: 'Signup failed' },
+      { error: 'Failed to create account' },
       { status: 500 }
-    )
+    );
   }
 } 

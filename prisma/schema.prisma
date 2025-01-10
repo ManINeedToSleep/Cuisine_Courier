@@ -41,7 +41,7 @@ model Recipe {
   collections   Collection[] @relation("RecipeCollections")
   categories    Category[] // For when you can't decide if it's dinner or breakfast
 
-  @@index([userId]) // Makes searching faster! Zoom zoom! 🏎️
+  @@index([userId])
 }
 
 model Collection {
@@ -62,9 +62,6 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
-
-// Add indexes for better query performance
-@@index([userId], name: "recipes_userId_idx")
 
 // The rest of the models follow similar patterns...
 // I won't comment them all because you get the idea

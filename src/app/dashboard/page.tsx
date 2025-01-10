@@ -56,7 +56,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-12">
           <h1 className="text-4xl font-serif text-amber-50 mb-2">
-            Welcome back, {user?.name}
+            Welcome back, {user?.name || 'Guest'}
           </h1>
           <p className="text-amber-100">
             Discover new recipes or check your saved favorites
