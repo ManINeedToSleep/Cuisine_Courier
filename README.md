@@ -127,7 +127,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 - Next.js team for the amazing framework
 - Prisma team for the excellent ORM
 - All contributors and users of the application
-```
+
 
 [View Prisma Schema Documentation](PRISMA.md) (For LP)
 
