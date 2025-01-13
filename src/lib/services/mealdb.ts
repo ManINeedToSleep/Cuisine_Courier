@@ -20,19 +20,10 @@ export const mealDBService = {
   },
 
   getRandomRecipes: async () => {
-    // Fetch more than needed to ensure uniqueness
-    const recipes = await Promise.all(
-      Array(8).fill(null).map(async () => {
-        const response = await fetch(`${MEALDB_BASE_URL}/random.php`)
-        const data = await response.json()
-        return data.meals[0]
-      })
-    )
-    
-    // Remove duplicates and limit to 6
-    return Array.from(
-      new Map(recipes.map(recipe => [recipe.idMeal, recipe])).values()
-    ).slice(0, 6)
+    // This fetches from MealDB API, not your database
+    const response = await fetch(`${MEALDB_BASE_URL}/random.php`)
+    const data = await response.json()
+    return data.meals?.[0]
   },
 
   getRecipesByCategory: async (category: string) => {
