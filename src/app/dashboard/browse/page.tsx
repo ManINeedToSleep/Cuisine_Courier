@@ -24,32 +24,35 @@ export default function BrowsePage() {
   const [randomRecipes, setRandomRecipes] = useState<MealDBRecipe[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedRecipe, setSelectedRecipe] = useState<MealDBRecipe | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
+    const fetchRandomRecipes = async () => {
+      try {
+        setLoading(true)
+        const recipe = await mealDBService.getRandomRecipes()
+        // Ensure we're always setting an array
+        setRandomRecipes(recipe ? [recipe] : [])
+      } catch (err) {
+        setError('Failed to fetch recipes')
+        setRandomRecipes([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchRandomRecipes()
   }, [])
 
-  const fetchRandomRecipes = async () => {
-    try {
-      const recipes = await mealDBService.getRandomRecipes()
-      setRandomRecipes(recipes)
-      setLoading(false)
-    } catch (error) {
-      console.error('Error fetching random recipes:', error)
-      setLoading(false)
-    }
-  }
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!searchQuery.trim()) return
-
+  const handleSearch = async (query: string) => {
     try {
       setLoading(true)
-      const results = await mealDBService.searchRecipes(searchQuery)
-      setSearchResults(results)
-    } catch (error) {
-      console.error('Error searching recipes:', error)
+      const results = await mealDBService.searchRecipes(query)
+      // Ensure we're always setting an array
+      setSearchResults(Array.isArray(results) ? results : [])
+    } catch (err) {
+      setError('Search failed')
+      setSearchResults([])
     } finally {
       setLoading(false)
     }
@@ -76,6 +79,9 @@ export default function BrowsePage() {
     }
   }
 
+  // Use an empty array as fallback when mapping
+  const recipesToDisplay = (searchResults.length > 0 ? searchResults : randomRecipes) || []
+
   return (
     <div className="min-h-screen bg-[url('/textures/wood-bg.jpg')] bg-cover">
       <div className="absolute inset-0 bg-black/20" />
@@ -96,16 +102,17 @@ export default function BrowsePage() {
         </div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="mb-8">
+        <form onSubmit={(e) => {
+          e.preventDefault()
+          handleSearch(searchQuery)
+        }} className="mb-8">
           <div className="max-w-xl">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search recipes..."
-              className="w-full px-4 py-2 rounded-lg bg-black/40 backdrop-blur-sm
-                       text-amber-50 placeholder-amber-200/50 border border-amber-100/20
-                       focus:outline-none focus:border-amber-100/40"
+              className="w-full px-4 py-2 rounded-lg"
             />
           </div>
         </form>
@@ -141,7 +148,7 @@ export default function BrowsePage() {
                 />
               ))
             ) : (
-              (searchResults.length > 0 ? searchResults : randomRecipes).map((recipe) => (
+              recipesToDisplay.map((recipe) => (
                 <div
                   key={recipe.idMeal}
                   className="recipe-card rounded-lg overflow-hidden bg-[url('/textures/light-wood.jpg')] bg-cover
