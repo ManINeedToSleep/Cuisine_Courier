@@ -1,24 +1,24 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Navbar from '@/components/layout/Navbar'
+import { type MealDBRecipe } from '@/lib/services/mealdb'
+import RecipeModal from '@/components/recipe/RecipeModal'
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid'
 
-interface Recipe {
-  id: number
-  title: string
-  image: string
-  readyInMinutes: number
-  servings: number
-}
-
-interface SavedRecipe extends Recipe {
-  savedAt: string
+type FavoriteRecipe = {
+  userId: string;
+  recipeId: string;
+  recipe: MealDBRecipe;
+  createdAt: string;
 }
 
 export default function SavedRecipesPage() {
   const router = useRouter()
-  const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([])
+  const [savedRecipes, setSavedRecipes] = useState<FavoriteRecipe[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedRecipe, setSelectedRecipe] = useState<MealDBRecipe | null>(null)
 
   useEffect(() => {
     fetchSavedRecipes()
@@ -26,13 +26,33 @@ export default function SavedRecipesPage() {
 
   const fetchSavedRecipes = async () => {
     try {
-      const response = await fetch('/api/recipes/saved')
+      const response = await fetch('/api/favorites')
       const data = await response.json()
       setSavedRecipes(data)
       setLoading(false)
     } catch (error) {
       console.error('Error fetching saved recipes:', error)
       setLoading(false)
+    }
+  }
+
+  const removeFavorite = async (recipe: MealDBRecipe) => {
+    try {
+      const response = await fetch('/api/favorites', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recipe }),
+      })
+
+      if (response.ok) {
+        setSavedRecipes(prev => 
+          prev.filter(fav => fav.recipeId !== recipe.idMeal)
+        )
+      }
+    } catch (error) {
+      console.error('Error removing favorite:', error)
     }
   }
 
@@ -70,28 +90,61 @@ export default function SavedRecipesPage() {
               </p>
             </div>
           ) : (
-            savedRecipes.map((recipe) => (
+            savedRecipes.map(({ recipe, createdAt }) => (
               <div
-                key={recipe.id}
-                className="recipe-card rounded-lg overflow-hidden bg-[url('/textures/light-wood.jpg')] bg-cover"
+                key={recipe.idMeal}
+                className="recipe-card rounded-lg overflow-hidden bg-[url('/textures/light-wood.jpg')] bg-cover relative group"
               >
-                <div className="bg-black/40 backdrop-blur-sm p-4">
-                  <h3 className="text-xl font-medium text-amber-50 mb-2">
-                    {recipe.title}
-                  </h3>
-                  <div className="flex items-center justify-between text-amber-100">
-                    <span>{recipe.readyInMinutes} mins</span>
-                    <span>{recipe.servings} servings</span>
-                  </div>
-                  <div className="mt-4 text-sm text-amber-200">
-                    Saved on {new Date(recipe.savedAt).toLocaleDateString()}
+                <div
+                  className="absolute inset-0 cursor-pointer"
+                  onClick={() => setSelectedRecipe(recipe)}
+                >
+                  <Image
+                    src={recipe.strMealThumb}
+                    alt={recipe.strMeal}
+                    width={500}
+                    height={300}
+                    className="w-full h-48 object-cover"
+                    priority={false}
+                    unoptimized={false}
+                  />
+                  <div className="bg-black/40 backdrop-blur-sm p-4">
+                    <h3 className="text-xl font-medium text-amber-50 mb-2">
+                      {recipe.strMeal}
+                    </h3>
+                    <div className="flex items-center justify-between text-amber-100">
+                      <span>{recipe.strCategory}</span>
+                      <span>{recipe.strArea}</span>
+                    </div>
+                    <div className="mt-4 text-sm text-amber-200">
+                      Saved on {new Date(createdAt).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
+                
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    removeFavorite(recipe)
+                  }}
+                  className="absolute top-2 right-2 p-2 rounded-full bg-black/50 
+                           hover:bg-black/70 transition-colors z-10"
+                >
+                  <HeartSolid className="w-6 h-6 text-red-500" />
+                </button>
               </div>
             ))
           )}
         </div>
       </main>
+
+      {/* Recipe Modal */}
+      {selectedRecipe && (
+        <RecipeModal
+          recipe={selectedRecipe}
+          onClose={() => setSelectedRecipe(null)}
+        />
+      )}
     </div>
   )
 } 

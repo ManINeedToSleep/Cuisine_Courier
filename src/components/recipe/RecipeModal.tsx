@@ -1,6 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
+import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline'
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid'
 
 interface RecipeModalProps {
   recipe: {
@@ -27,8 +30,46 @@ const getDifficulty = (instructions: string) => {
 }
 
 export default function RecipeModal({ recipe, onClose }: RecipeModalProps) {
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState<'ingredients' | 'instructions'>('ingredients')
+  const [isFavorite, setIsFavorite] = useState(false)
   const difficulty = getDifficulty(recipe.strInstructions)
+
+  // Add useEffect to check if recipe is favorited
+  useEffect(() => {
+    const checkFavorite = async () => {
+      if (!session?.user?.email) return
+      try {
+        const response = await fetch('/api/favorites')
+        const data = await response.json()
+        setIsFavorite(data.some((fav: any) => fav.recipeId === recipe.idMeal))
+      } catch (error) {
+        console.error('Error checking favorite:', error)
+      }
+    }
+    checkFavorite()
+  }, [session?.user?.email, recipe.idMeal])
+
+  // Add toggle favorite function
+  const toggleFavorite = async () => {
+    if (!session?.user?.email) return
+    try {
+      const method = isFavorite ? 'DELETE' : 'POST'
+      const response = await fetch('/api/favorites', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recipe }),
+      })
+
+      if (response.ok) {
+        setIsFavorite(!isFavorite)
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    }
+  }
 
   // Get all ingredients and measurements (improved filtering)
   const ingredients = Array.from({ length: 20 }, (_, i) => {
@@ -60,12 +101,24 @@ export default function RecipeModal({ recipe, onClose }: RecipeModalProps) {
                     </span>
                   </div>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="text-amber-100 hover:text-amber-50 transition-colors"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={toggleFavorite}
+                    className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  >
+                    {isFavorite ? (
+                      <HeartSolid className="w-6 h-6 text-red-500" />
+                    ) : (
+                      <HeartOutline className="w-6 h-6 text-white" />
+                    )}
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="text-amber-100 hover:text-amber-50 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             </div>
 

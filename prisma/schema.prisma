@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL") // Points to your MySQL database
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
 }
 
 // Users - The chefs of our kitchen

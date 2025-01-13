@@ -11,18 +11,11 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/context/AuthContext'
 import Navbar from '@/components/layout/Navbar'
-
-interface Recipe {
-  id: number
-  title: string
-  image: string
-  readyInMinutes: number
-  servings: number
-}
+import { mealDBService, type MealDBRecipe } from '@/lib/services/mealdb'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [recipes, setRecipes] = useState<MealDBRecipe[]>([])
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
 
@@ -32,9 +25,13 @@ export default function DashboardPage() {
 
   const fetchLatestRecipes = async () => {
     try {
-      const response = await fetch('/api/recipes/latest')
-      const data = await response.json()
-      setRecipes(data)
+      // Fetch 6 random recipes
+      const recipes = await Promise.all(
+        Array(6).fill(null).map(() => mealDBService.getRandomRecipes())
+      )
+      
+      // Filter out any null values and set the recipes
+      setRecipes(recipes.filter((recipe): recipe is MealDBRecipe => recipe !== null))
       setLoading(false)
     } catch (error) {
       console.error('Error fetching recipes:', error)
@@ -100,16 +97,16 @@ export default function DashboardPage() {
             ) : (
               recipes.map((recipe) => (
                 <div
-                  key={recipe.id}
+                  key={recipe.idMeal}
                   className="recipe-card rounded-lg overflow-hidden bg-[url('/textures/light-wood.jpg')] bg-cover"
                 >
                   <div className="bg-black/40 backdrop-blur-sm p-4">
                     <h3 className="text-xl font-medium text-amber-50 mb-2">
-                      {recipe.title}
+                      {recipe.strMeal}
                     </h3>
                     <div className="flex items-center justify-between text-amber-100">
-                      <span>{recipe.readyInMinutes} mins</span>
-                      <span>{recipe.servings} servings</span>
+                      <span>{recipe.strCategory}</span>
+                      <span>{recipe.strArea}</span>
                     </div>
                   </div>
                 </div>
