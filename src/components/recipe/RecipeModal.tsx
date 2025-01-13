@@ -22,6 +22,10 @@ interface RecipeModalProps {
   onClose: () => void
 }
 
+type FavoriteResponse = {
+  recipeId: string;
+}
+
 const getDifficulty = (instructions: string) => {
   const steps = instructions.split('\r\n').filter(step => step.trim().length > 0)
   if (steps.length <= 5) return { level: 'Easy', color: 'bg-green-500' }
@@ -42,7 +46,7 @@ export default function RecipeModal({ recipe, onClose }: RecipeModalProps) {
       try {
         const response = await fetch('/api/favorites')
         const data = await response.json()
-        setIsFavorite(data.some((fav: any) => fav.recipeId === recipe.idMeal))
+        setIsFavorite(data.some((fav: FavoriteResponse) => fav.recipeId === recipe.idMeal))
       } catch (error) {
         console.error('Error checking favorite:', error)
       }

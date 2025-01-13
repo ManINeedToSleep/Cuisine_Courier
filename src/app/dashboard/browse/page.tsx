@@ -24,7 +24,6 @@ export default function BrowsePage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRecipe, setSelectedRecipe] = useState<MealDBRecipe | null>(null)
-  const [error, setError] = useState('')
 
   useEffect(() => {
     const fetchRandomRecipes = async () => {
