@@ -1,117 +1,135 @@
 # Cuisine Courier 🍳
 
-A modern recipe discovery and management application built with Next.js 14, Prisma, and MySQL.
+A modern recipe discovery and management application built with Next.js 14, Prisma, and MySQL. Discover, save, and organize your favorite recipes with a beautiful wood-themed UI.
 
 ## Features 🌟
 
-### Authentication
-- Secure user authentication with NextAuth
-- Session management
-- Protected routes
+### Authentication & Security
+- Secure user signup and login system
+- JWT-based session management with HTTP-only cookies
+- Password encryption with bcrypt
+- Protected routes with middleware
 
-### Recipe Discovery
+### Recipe Management
 - Browse recipes from TheMealDB API
-- Search functionality
-- Category filtering
-- Detailed recipe modal with:
-  - Ingredients list
+- Advanced search functionality
+- Category-based filtering
+- Detailed recipe information:
+  - Ingredients and measurements
   - Step-by-step instructions
   - Difficulty indicators
-  - YouTube video tutorials (when available)
+  - Cuisine type
+  - Category
   - Source links
 - Favorite recipes functionality
 
-### User Interface
-- Responsive design
-- Modern glass-morphism UI
-- Dynamic loading states
-- Error handling
-- Smooth animations
-- Mobile-friendly layout
+### User Experience
+- Responsive wood-textured UI design
+- GSAP-powered animations
+- Loading states and skeletons
+- Modal-based recipe viewing
+- Favorite recipe management
+- Quick access dashboard
 
 ## Tech Stack 💻
 
-- **Frontend**:
-  - Next.js 14 (App Router)
-  - React
-  - Tailwind CSS
-  - TypeScript
+### Frontend
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- GSAP for animations
+- Heroicons
+- Framer Motion
   - Heroicons
 
-- **Backend**:
-  - Next.js API Routes
-  - Prisma ORM
-  - MySQL Database
+### Backend
+- Next.js API Routes
+- Prisma ORM
+- MySQL
+- JSON Web Tokens
+- bcrypt for password hashing
 
-- **Authentication**:
-  - NextAuth.js
-  - Session-based authentication
-
-- **External APIs**:
-  - TheMealDB API
+### Development
+- ESLint
+- PostCSS
+- TypeScript
+- Prisma CLI
 
 ## Getting Started 🚀
 
 1. Clone the repository:
-```bash
+
+bash
 git clone https://github.com/yourusername/cuisine-courier.git
 cd cuisine-courier
-```
 
 2. Install dependencies:
-```bash
-npm install
-```
 
-3. Set up your environment variables:
+bash
+npm install
+
+3. Set up your database:
+
+### Using MySQL Workbench
+1. Download and install [MySQL Workbench](https://dev.mysql.com/downloads/workbench/)
+2. Open MySQL Workbench and create a new connection
+3. Create a new schema (database):
+   ```sql
+   CREATE DATABASE cuisine_courier;
+   ```
+4. Set up your environment variables:
+   ```env
+   # Create a .env file with:
+   DATABASE_URL="mysql://user:password@localhost:3306/cuisine_courier"
+   JWT_SECRET="your-secret-key"
+   ```
+   Replace `user`, `password`, and `cuisine_courier` with your MySQL credentials and database name.
+
+### Using PostgreSQL
 ```env
 DATABASE_URL="mysql://user:password@localhost:3306/cuisine_courier"
-JWT_SECRET="your-super-"
+JWT_SECRET="your-secret-key"
 ```
 
-4. Set up the database:
+4. Initialize the database:
 ```bash
-npx prisma generate
-npx prisma db push
+# Run Prisma migrations
+npx prisma migrate dev
+
+# Seed the database
+npm run db:seed
 ```
 
-5. Run the development server:
+5. Start the development server:
 ```bash
 npm run dev
 ```
 
-## Database Schema 📊
+Visit `http://localhost:3000` to see your application.
 
-```prisma
-model User {
-  id          Int          @id @default(autoincrement())
-  email       String       @unique
-  password    String    
-  name        String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  recipes     Recipe[]     @relation("UserRecipes")
-  favorites   Recipe[]     @relation("UserFavorites")
-  collections Collection[]
-}
+## Project Structure 📁
 
-model Recipe {
-  id            String        @id
-  name          String
-  thumbnail     String
-  category      String
-  area          String
-  instructions  String
-  createdBy     User?        @relation("UserRecipes", fields: [userId], references: [id])
-  userId        Int?
-  favoritedBy   User[]       @relation("UserFavorites")
-  collections   Collection[]  @relation("RecipeCollections")
-  categories    Category[]
-  favorites     Favorite[]
-}
-
-// ... other models
 ```
+cuisine-courier/
+├── src/
+│   ├── app/                 # Next.js 14 app directory
+│   │   ├── (auth)/         # Authentication routes
+│   │   ├── api/            # API routes
+│   │   └── dashboard/      # Protected routes
+│   ├── components/         # Reusable components
+│   ├── lib/               # Utilities and services
+│   └── styles/            # Global styles
+├── prisma/                # Database schema and migrations
+└── public/               # Static assets
+```
+
+## API Integration 🔌
+
+This project uses TheMealDB API for recipe data. The integration is handled through the `mealDBService` utility, providing:
+- Random recipe fetching
+- Search functionality
+- Category-based filtering
+- Detailed recipe information
 
 ## Contributing 🤝
 
@@ -132,6 +150,11 @@ model Recipe {
 - [ ] Dietary restriction filters
 - [ ] Recipe scaling functionality
 - [ ] Print-friendly recipe views
+- [ ] Social sharing features
+- [ ] Personal recipe creation
+- [ ] Shopping list generation
+- [ ] Meal planning calendar
+- [ ] Nutritional information
 - [ ] Mobile app version
 
 ## License 📝
@@ -144,7 +167,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 - Next.js team for the amazing framework
 - Prisma team for the excellent ORM
 - All contributors and users of the application
-
-
-[View Prisma Schema Documentation](PRISMA.md) (For LP)
-
