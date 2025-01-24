@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 // Users - The chefs of our kitchen
@@ -18,30 +18,25 @@ model User {
   name          String
   createdAt     DateTime  @default(now()) // When they joined our cooking party
   updatedAt     DateTime  @updatedAt
-  recipes       Recipe[]  // Their culinary creations
-  favorites     Recipe[]  @relation("UserFavorites") // Their bookmarked recipes
+  recipes       Recipe[]  @relation("UserRecipes")
+  favorites     Recipe[]  @relation("UserFavorites")
   collections   Collection[] // Their recipe playlists, if you will 📑
 }
 
 // Recipes - The stars of the show! ⭐
 model Recipe {
-  id            Int       @id @default(autoincrement())
-  title         String    // The name of the masterpiece
-  description   String    @db.Text // A lovely description of the dish
-  ingredients   Json      // Shopping list as JSON - modern problems require modern solutions
-  instructions  Json      // How to not burn water
-  cookingTime   Int       // In minutes, because we're not savages
-  servings      Int      // How many friends you can feed
-  imageUrl      String?  // A picture is worth a thousand words
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  userId        Int
-  user          User      @relation(fields: [userId], references: [id])
-  favoritedBy   User[]    @relation("UserFavorites")
-  collections   Collection[] @relation("RecipeCollections")
+  id            String        @id
+  name          String
+  thumbnail     String
+  category      String
+  area          String
+  instructions  String
+  createdBy     User?        @relation("UserRecipes", fields: [userId], references: [id])
+  userId        Int?
+  favoritedBy   User[]       @relation("UserFavorites")
+  collections   Collection[]  @relation("RecipeCollections")
   categories    Category[] // For when you can't decide if it's dinner or breakfast
-
-  @@index([userId])
+  favorites     Favorite[]
 }
 
 model Collection {
@@ -61,6 +56,16 @@ model Category {
   recipes     Recipe[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model Favorite {
+  userId    String
+  recipeId  String
+  recipe    Recipe    @relation(fields: [recipeId], references: [id])
+  createdAt DateTime  @default(now())
+
+  @@id([userId, recipeId])
+  @@index([userId])
 }
 
 // The rest of the models follow similar patterns...

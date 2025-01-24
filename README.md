@@ -5,9 +5,9 @@ A modern recipe discovery and management application built with Next.js 14, Pris
 ## Features 🌟
 
 ### Authentication
-- Secure user signup and login
-- JWT-based session management
-- Password encryption with bcrypt
+- Secure user authentication with NextAuth
+- Session management
+- Protected routes
 
 ### Recipe Discovery
 - Browse recipes from TheMealDB API
@@ -19,6 +19,7 @@ A modern recipe discovery and management application built with Next.js 14, Pris
   - Difficulty indicators
   - YouTube video tutorials (when available)
   - Source links
+- Favorite recipes functionality
 
 ### User Interface
 - Responsive design
@@ -31,10 +32,11 @@ A modern recipe discovery and management application built with Next.js 14, Pris
 ## Tech Stack 💻
 
 - **Frontend**:
-  - Next.js 14
+  - Next.js 14 (App Router)
   - React
   - Tailwind CSS
   - TypeScript
+  - Heroicons
 
 - **Backend**:
   - Next.js API Routes
@@ -42,8 +44,8 @@ A modern recipe discovery and management application built with Next.js 14, Pris
   - MySQL Database
 
 - **Authentication**:
-  - JWT (JSON Web Tokens)
-  - Bcrypt for password hashing
+  - NextAuth.js
+  - Session-based authentication
 
 - **External APIs**:
   - TheMealDB API
@@ -64,7 +66,7 @@ npm install
 3. Set up your environment variables:
 ```env
 DATABASE_URL="mysql://user:password@localhost:3306/cuisine_courier"
-JWT_SECRET="your-secret-key"
+JWT_SECRET="your-super-"
 ```
 
 4. Set up the database:
@@ -82,15 +84,30 @@ npm run dev
 
 ```prisma
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique
-  password      String    
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  password    String    
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  recipes     Recipe[]     @relation("UserRecipes")
+  favorites   Recipe[]     @relation("UserFavorites")
+  collections Collection[]
+}
+
+model Recipe {
+  id            String        @id
   name          String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  recipes       Recipe[]  
-  favorites     Recipe[]  @relation("UserFavorites")
-  collections   Collection[]
+  thumbnail     String
+  category      String
+  area          String
+  instructions  String
+  createdBy     User?        @relation("UserRecipes", fields: [userId], references: [id])
+  userId        Int?
+  favoritedBy   User[]       @relation("UserFavorites")
+  collections   Collection[]  @relation("RecipeCollections")
+  categories    Category[]
+  favorites     Favorite[]
 }
 
 // ... other models
@@ -106,7 +123,7 @@ model User {
 
 ## Future Enhancements 🔮
 
-- [ ] Recipe saving functionality
+- [x] Recipe saving functionality
 - [ ] Personal recipe collections
 - [ ] Recipe ratings and reviews
 - [ ] Social sharing features
